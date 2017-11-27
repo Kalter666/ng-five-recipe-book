@@ -1,10 +1,12 @@
 import { Actions, Effect } from '@ngrx/effects';
 import { Injectable } from '@angular/core';
 import 'rxjs/add/operator/map';
+import 'rxjs/add/operator/do';
 import 'rxjs/add/operator/switchMap';
 import 'rxjs/add/operator/mergeMap';
-import * as firebase from 'firebase';
+import { Router } from '@angular/router';
 import { fromPromise } from 'rxjs/observable/fromPromise';
+import * as firebase from 'firebase';
 
 import * as AuthActions from './auth.actions';
 
@@ -47,6 +49,7 @@ export class AuthEffects {
       return fromPromise(firebase.auth().currentUser.getIdToken());
     })
     .mergeMap((token: string) => {
+      this.router.navigate(['/']);
       return [
         {
           type: AuthActions.SIGNIN
@@ -58,6 +61,13 @@ export class AuthEffects {
       ];
     });
 
-  constructor(private actions$: Actions) {
+  @Effect({ dispatch: false })
+  authLogout = this.actions$
+    .ofType(AuthActions.LOGOUT)
+    .do(() => {
+      this.router.navigate(['/']);
+    });
+
+  constructor(private actions$: Actions, private router: Router) {
   }
 }
